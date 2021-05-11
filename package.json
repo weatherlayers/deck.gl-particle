@@ -1,0 +1,47 @@
+{
+  "name": "deck.gl-particle",
+  "version": "1.0.0",
+  "description": "Particle simulation layer for deck.gl",
+  "keywords": [
+    "deck.gl",
+    "particle",
+    "wind"
+  ],
+  "author": "Jan Zak <jan@kamzek.com>",
+  "license": "MPL-2.0",
+  "repository": "github:zakjan/deck.gl-particle",
+  "main": "src/index.js",
+  "browser": "dist/deck.gl-particle.min.js",
+  "scripts": {
+    "build": "rimraf dist && rollup -c",
+    "dev": "rollup -c -w",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.13.8",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/plugin-transform-runtime": "^7.13.9",
+    "@babel/preset-env": "^7.13.9",
+    "@babel/runtime": "^7.13.9",
+    "@danmarshall/deckgl-typings": "^4.8.0",
+    "@deck.gl/core": "^8.4.16",
+    "@deck.gl/layers": "^8.4.16",
+    "@luma.gl/constants": "^8.4.4",
+    "@luma.gl/core": "^8.4.4",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-node-resolve": "^11.2.0",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.40.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-visualizer": "^4.2.0"
+  },
+  "peerDependencies": {
+    "@deck.gl/core": "^8.0.0",
+    "@deck.gl/layers": "^8.0.0",
+    "@luma.gl/core": "^8.0.0",
+    "@luma.gl/constants": "^8.0.0"
+  }
+}

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>deck-gl.particle</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+  <script src="https://unpkg.com/stats.js@0.17.0/build/stats.min.js"></script>
+  <script src="https://unpkg.com/deck.gl@8.5.0-alpha.5/dist.min.js"></script>
+  <script src="https://unpkg.com/@luma.gl/constants@8.4.5/dist/dist.min.js"></script>
+  <script src="./deck.gl-raster.min.js"></script>
+  <!-- <script src="https://unpkg.com/deck.gl-particle@1.0.0/dist/deck.gl-particle.min.js"></script> -->
+  <script src="../dist/deck.gl-particle.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+    }
+
+    #deck {
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="deck"></div>
+
+  <script type="module">
+    import { initConfig, initGui, initFpsMeter } from './config.js';
+
+    const landUrl = 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson';
+    const colormapUrl = 'wind_colormap.png';
+    const particleUrl = 'wind_data.png';
+    const rasterUrl = 'wind_data.png';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const config = initConfig();
+
+      const deckgl = new deck.Deck({
+        parent: document.getElementById('deck'),
+        initialViewState: {
+          longitude: -100,
+          latitude: 30,
+          zoom: 1.4,
+        },
+        controller: true,
+        views: [
+          new deck._GlobeView(),
+        ],
+        layers: [],
+        _animate: true,
+      });
+      
+      // animation
+      const rotateAnimation = new DeckGlParticle.Animation(() => {
+        deckgl.setProps({
+          initialViewState: {
+            ...deckgl.props.initialViewState,
+            longitude: deckgl.props.initialViewState.longitude + 0.3,
+          },
+        });
+      });
+
+      // config
+      function update() {
+        deckgl.setProps({
+          layers: [
+            new deck.SolidPolygonLayer({
+              id: 'background',
+              data: [[[-180, 90], [0, 90], [180, 90], [180, -90], [0, -90], [-180, -90]]],
+              getPolygon: d => d,
+              stroked: false,
+              filled: true,
+              getFillColor: [26, 26, 26],
+            }),
+            new deck['gl-raster'].RasterLayer({
+              id: 'raster',
+              images: {
+                imageRgba: {
+                  data: rasterUrl,
+                  format: luma.GL.RGB,
+                  parameters: {
+                    [luma.GL.TEXTURE_MIN_FILTER]: luma.GL.LINEAR,
+                    [luma.GL.TEXTURE_MAG_FILTER]: luma.GL.LINEAR,
+                  },
+                },
+                imageColormap: {
+                  data: colormapUrl,
+                  format: luma.GL.RGBA,
+                  parameters: {
+                    [luma.GL.TEXTURE_MIN_FILTER]: luma.GL.LINEAR,
+                    [luma.GL.TEXTURE_MAG_FILTER]: luma.GL.LINEAR,
+                  },
+                },
+                imageMask: {
+                  data: rasterUrl,
+                  format: luma.GL.ALPHA,
+                  parameters: {
+                    [luma.GL.TEXTURE_MIN_FILTER]: luma.GL.LINEAR,
+                    [luma.GL.TEXTURE_MAG_FILTER]: luma.GL.LINEAR,
+                  },
+                },
+              },
+              modules: [
+                deck['gl-raster'].rgbaImage,
+                deck['gl-raster'].linearRescale,
+                deck['gl-raster'].vectorLength,
+                deck['gl-raster'].colormap,
+                deck['gl-raster'].maskImage,
+              ],
+              moduleProps: {
+                linearRescaleScaler: 2,
+                linearRescaleOffset: -1,
+                colormapScaler: 1,
+                colormapOffset: 0,
+              },
+              opacity: config.raster.opacity,
+              bounds: [-180, -90, 180, 90],
+              _imageCoordinateSystem: deck.COORDINATE_SYSTEM.LNGLAT,
+            }),
+            new deck.GeoJsonLayer({
+              id: 'land',
+              data: landUrl,
+              stroked: true,
+              filled: false,
+              getLineColor: [255, 255, 255, 127],
+              getLineWidth: 1,
+              lineWidthUnits: 'pixels',
+            }),
+            new DeckGlParticle.ParticleLayer({
+              id: 'particle',
+              image: particleUrl,
+              numParticles: config.particle.numParticles,
+              maxAge: config.particle.maxAge,
+              speedFactor: config.particle.speedFactor,
+              getColor: config.particle.color,
+              getWidth: config.particle.width,
+              opacity: config.particle.opacity,
+              animate: config.particle.animate,
+            }),
+          ],
+          _animate: config.particle.animate,
+        });
+        rotateAnimation.toggle(config.rotate);
+      }
+      update();
+      initGui(config, update, { deckgl, globe: true });
+      initFpsMeter();
+    });
+  </script>
+</body>
+
+</html>

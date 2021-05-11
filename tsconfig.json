@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "esnext",
+    "lib": ["dom", "esnext"],
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": true,
+    "allowJs": true,
+    "checkJs": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
+  },
+  "include": [
+    "./src/**/*"
+  ]
+}
