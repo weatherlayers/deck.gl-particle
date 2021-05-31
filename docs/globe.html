@@ -32,8 +32,8 @@
 
     const landUrl = 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson';
     const colormapUrl = 'wind_colormap.png';
-    const particleUrl = 'wind_data.png';
     const rasterUrl = 'wind_data.png';
+    const particleUrl = 'wind_data.png';
 
     window.addEventListener('DOMContentLoaded', () => {
       const config = initConfig();
@@ -51,7 +51,7 @@
         ],
         layers: [],
       });
-      
+
       // animation
       const rotateAnimation = new DeckGlParticle.Animation(() => {
         deckgl.setProps({

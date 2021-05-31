@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>deck-gl.particle</title>
@@ -15,140 +16,143 @@
       margin: 0;
       background: #000;
     }
+
     #deck {
       width: 100vw;
       height: 100vh;
     }
   </style>
 </head>
+
 <body>
   <div id="deck"></div>
 
-<script type="module">
-import { initConfig, initGui, initFpsMeter } from './config.js';
+  <script type="module">
+    import { initConfig, initGui, initFpsMeter } from './config.js';
 
-const landUrl = 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_land.geojson';
-const colormapUrl = 'wind_colormap.png';
-const particleUrl = 'wind_data.png';
-const rasterUrl = 'wind_data.png';
+    const landUrl = 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_land.geojson';
+    const colormapUrl = 'wind_colormap.png';
+    const rasterUrl = 'wind_data.png';
+    const particleUrl = 'wind_data.png';
 
-window.addEventListener('DOMContentLoaded', () => {
-  const config = initConfig();
+    window.addEventListener('DOMContentLoaded', () => {
+      const config = initConfig();
 
-  const deckgl = new deck.Deck({
-    parent: document.getElementById('deck'),
-    initialViewState: {
-      longitude: 30,
-      latitude: 0,
-      zoom: 0,
-    },
-    controller: {
-      normalize: false,
-    },
-    views: [
-      new deck.MapView({ repeat: true }),
-      new deck.MapView(),
-    ],
-    layers: [],
-    layerFilter: ({layer, viewport}) => {
-      if (layer.id == 'particle') {
-        return !viewport.subViewports;
-      } else {
-        return !!viewport.subViewports;
-      }
-    },
-  });
+      const deckgl = new deck.Deck({
+        parent: document.getElementById('deck'),
+        initialViewState: {
+          longitude: 30,
+          latitude: 0,
+          zoom: 0,
+        },
+        controller: {
+          normalize: false,
+        },
+        views: [
+          new deck.MapView({ repeat: true }),
+          new deck.MapView(),
+        ],
+        layers: [],
+        layerFilter: ({ layer, viewport }) => {
+          if (layer.id == 'particle') {
+            return !viewport.subViewports;
+          } else {
+            return !!viewport.subViewports;
+          }
+        },
+      });
 
-  // config
-  function update() {
-    deckgl.setProps({
-      layers: [
-        new deck.SolidPolygonLayer({
-          id: 'background',
-          data: [[[-180, 85.051129], [0, 85.051129], [180, 85.051129], [180, -85.051129], [0, -85.051129], [-180, -85.051129]]],
-          getPolygon: d => d,
-          stroked: false,
-          filled: true,
-          getFillColor: [26, 26, 26],
-        }),
-        new deck['gl-raster'].RasterLayer({
-          id: 'raster',
-          images: {
-            imageRgba: {
-              data: rasterUrl,
-              format: luma.GL.RGB,
-              parameters: {
-                [luma.GL.TEXTURE_MIN_FILTER]: luma.GL.LINEAR,
-                [luma.GL.TEXTURE_MAG_FILTER]: luma.GL.LINEAR,
+      // config
+      function update() {
+        deckgl.setProps({
+          layers: [
+            new deck.SolidPolygonLayer({
+              id: 'background',
+              data: [[[-180, 85.051129], [0, 85.051129], [180, 85.051129], [180, -85.051129], [0, -85.051129], [-180, -85.051129]]],
+              getPolygon: d => d,
+              stroked: false,
+              filled: true,
+              getFillColor: [26, 26, 26],
+            }),
+            new deck['gl-raster'].RasterLayer({
+              id: 'raster',
+              images: {
+                imageRgba: {
+                  data: rasterUrl,
+                  format: luma.GL.RGB,
+                  parameters: {
+                    [luma.GL.TEXTURE_MIN_FILTER]: luma.GL.LINEAR,
+                    [luma.GL.TEXTURE_MAG_FILTER]: luma.GL.LINEAR,
+                  },
+                },
+                imageColormap: {
+                  data: colormapUrl,
+                  format: luma.GL.RGBA,
+                  parameters: {
+                    [luma.GL.TEXTURE_MIN_FILTER]: luma.GL.LINEAR,
+                    [luma.GL.TEXTURE_MAG_FILTER]: luma.GL.LINEAR,
+                  },
+                },
+                imageMask: {
+                  data: rasterUrl,
+                  format: luma.GL.ALPHA,
+                  parameters: {
+                    [luma.GL.TEXTURE_MIN_FILTER]: luma.GL.LINEAR,
+                    [luma.GL.TEXTURE_MAG_FILTER]: luma.GL.LINEAR,
+                  },
+                },
               },
-            },
-            imageColormap: {
-              data: colormapUrl,
-              format: luma.GL.RGBA,
-              parameters: {
-                [luma.GL.TEXTURE_MIN_FILTER]: luma.GL.LINEAR,
-                [luma.GL.TEXTURE_MAG_FILTER]: luma.GL.LINEAR,
+              modules: [
+                deck['gl-raster'].rgbaImage,
+                deck['gl-raster'].linearRescale,
+                deck['gl-raster'].vectorLength,
+                deck['gl-raster'].colormap,
+                deck['gl-raster'].maskImage,
+              ],
+              moduleProps: {
+                linearRescaleScaler: 2,
+                linearRescaleOffset: -1,
+                colormapScaler: 1,
+                colormapOffset: 0,
               },
-            },
-            imageMask: {
-              data: rasterUrl,
-              format: luma.GL.ALPHA,
-              parameters: {
-                [luma.GL.TEXTURE_MIN_FILTER]: luma.GL.LINEAR,
-                [luma.GL.TEXTURE_MAG_FILTER]: luma.GL.LINEAR,
-              },
-            },
-          },
-          modules: [
-            deck['gl-raster'].rgbaImage,
-            deck['gl-raster'].linearRescale,
-            deck['gl-raster'].vectorLength,
-            deck['gl-raster'].colormap,
-            deck['gl-raster'].maskImage,
+              opacity: config.raster.opacity,
+              bounds: [-180, -90, 180, 90],
+              _imageCoordinateSystem: deck.COORDINATE_SYSTEM.LNGLAT,
+              extensions: [new deck.ClipExtension()],
+              clipBounds: [-360, -85.051129, 360, 85.051129],
+            }),
+            new deck.GeoJsonLayer({
+              id: 'land',
+              data: landUrl,
+              stroked: true,
+              filled: false,
+              getLineColor: [255, 255, 255, 127],
+              getLineWidth: 1,
+              lineWidthUnits: 'pixels',
+              extensions: [new deck.ClipExtension()],
+              clipBounds: [-360, -85.051129, 360, 85.051129],
+            }),
+            new DeckGlParticle.ParticleLayer({
+              id: 'particle',
+              maxAge: config.particle.maxAge,
+              numParticles: config.particle.numParticles,
+              image: particleUrl,
+              speedFactor: config.particle.speedFactor,
+              getColor: config.particle.color,
+              getWidth: config.particle.width,
+              opacity: config.particle.opacity,
+              animate: config.particle.animate,
+              getPolygonOffset: ({ layerIndex }) => [0, -1000], // layerIndex is per view
+            }),
           ],
-          moduleProps: {
-            linearRescaleScaler: 2,
-            linearRescaleOffset: -1,
-            colormapScaler: 1,
-            colormapOffset: 0,
-          },
-          opacity: config.raster.opacity,
-          bounds: [-180, -90, 180, 90],
-          _imageCoordinateSystem: deck.COORDINATE_SYSTEM.LNGLAT,
-          extensions: [new deck.ClipExtension()],
-          clipBounds: [-360, -85.051129, 360, 85.051129],
-        }),
-        new deck.GeoJsonLayer({
-          id: 'land',
-          data: landUrl,
-          stroked: true,
-          filled: false,
-          getLineColor: [255, 255, 255, 127],
-          getLineWidth: 1,
-          lineWidthUnits: 'pixels',
-          extensions: [new deck.ClipExtension()],
-          clipBounds: [-360, -85.051129, 360, 85.051129],
-        }),
-        new DeckGlParticle.ParticleLayer({
-          id: 'particle',
-          maxAge: config.particle.maxAge,
-          numParticles: config.particle.numParticles,
-          image: particleUrl,
-          speedFactor: config.particle.speedFactor,
-          getColor: config.particle.color,
-          getWidth: config.particle.width,
-          opacity: config.particle.opacity,
-          animate: config.particle.animate,
-          getPolygonOffset: ({layerIndex}) => [0, -1000], // layerIndex is per view
-        }),
-      ],
-      _animate: config.particle.animate,
+          _animate: config.particle.animate,
+        });
+      }
+      update();
+      initGui(config, update, { deckgl });
+      initFpsMeter();
     });
-  }
-  update();
-  initGui(config, update, { deckgl });
-  initFpsMeter();
-});
-</script>
+  </script>
 </body>
+
 </html>
