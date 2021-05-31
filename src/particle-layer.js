@@ -189,7 +189,7 @@ export default class ParticleLayer extends LineLayer {
   }
 
   _runTransformFeedback() {
-    const {viewport, timeline} = this.context;
+    const {gl, viewport, timeline} = this.context;
     const {image, bounds, numParticles, speedFactor, maxAge} = this.props;
     const {numAgedInstances, transform} = this.state;
 
@@ -211,7 +211,7 @@ export default class ParticleLayer extends LineLayer {
     viewportBounds[3] = Math.min(viewportBounds[3], 85.051129);
 
     // speed factor for current zoom level
-    const devicePixelRatio = window.devicePixelRatio || 1;
+    const devicePixelRatio = gl.luma.canvasSizeInfo.devicePixelRatio;
     const viewportSpeedFactor = speedFactor * devicePixelRatio / 2 ** viewport.zoom;
 
     // age particles
