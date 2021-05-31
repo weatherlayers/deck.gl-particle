@@ -1,6 +1,6 @@
 {
   "name": "deck.gl-particle",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Particle simulation layer for deck.gl",
   "keywords": [
     "deck.gl",
