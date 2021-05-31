@@ -10,29 +10,12 @@ import {LineLayer} from '@deck.gl/layers';
 import {Buffer, Transform} from '@luma.gl/core';
 import GL from '@luma.gl/constants';
 
+import { distance } from './geodesy';
 import updateTransformVs from './particle-layer-update-transform.vs.glsl';
-
-const EARTH_RADIUS = 6370972;
 
 const DEFAULT_TEXTURE_PARAMETERS = {
   [GL.TEXTURE_WRAP_S]: GL.REPEAT,
 };
-
-// see https://github.com/chrisveness/geodesy/blob/master/latlon-spherical.js#L187
-function distanceTo(from, point) {
-  const φ1 = from[1] * Math.PI / 180;
-  const λ1 = from[0] * Math.PI / 180;
-  const φ2 = point[1] * Math.PI / 180;
-  const λ2 = point[0] * Math.PI / 180;
-  const Δφ = φ2 - φ1;
-  const Δλ = λ2 - λ1;
-
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const d = EARTH_RADIUS * c;
-
-  return d;
-}
 
 const defaultProps = {
   ...LineLayer.defaultProps,
@@ -200,9 +183,9 @@ export default class ParticleLayer extends LineLayer {
     const viewportSphere = viewport.resolution ? 1 : 0; // globe
     const viewportSphereCenter = [viewport.longitude, viewport.latitude];
     const viewportSphereRadius = Math.max(
-      distanceTo(viewportSphereCenter, viewport.unproject([0, 0])),
-      distanceTo(viewportSphereCenter, viewport.unproject([viewport.width / 2, 0])),
-      distanceTo(viewportSphereCenter, viewport.unproject([0, viewport.height / 2])),
+      distance(viewportSphereCenter, viewport.unproject([0, 0])),
+      distance(viewportSphereCenter, viewport.unproject([viewport.width / 2, 0])),
+      distance(viewportSphereCenter, viewport.unproject([0, viewport.height / 2])),
     );
     const viewportBounds = viewport.getBounds();
     // viewportBounds[0] = Math.max(viewportBounds[0], -180);
