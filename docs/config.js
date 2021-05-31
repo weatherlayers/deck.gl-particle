@@ -2,12 +2,12 @@ export function initConfig() {
   return {
     rotate: false,
     raster: {
-      opacity: 0.2,
+      opacity: 0.3,
     },
     particle: {
       numParticles: 5000,
-      maxAge: 30,
-      speedFactor: 10,
+      maxAge: 25,
+      speedFactor: 2,
       color: [255, 255, 255],
       width: 2,
       opacity: 0.01,
