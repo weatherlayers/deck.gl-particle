@@ -6,4 +6,3 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 export {default as ParticleLayer} from './particle-layer';
-export {default as Animation} from './animation';
