@@ -28,8 +28,8 @@ const deckgl = new Deck({
       numParticles: ..., // number
       maxAge: ..., // number
       speedFactor: ..., // number
-      getColor: ..., // [number, number, number]
-      getWidth: ..., // number
+      color: ..., // [number, number, number]
+      width: ..., // number
       opacity: ..., // number
     });
   ],
@@ -39,4 +39,4 @@ const deckgl = new Deck({
 
 ## Weather layers as a service
 
-Interested in integrating weather layers into your existing map application? <a href="mailto:zj@zakjan.cz">Get in touch for a private beta!</a>
+Interested in integrating weather layers into your existing map application? <a href="https://zakjan.cz">Get in touch for a private beta!</a>
