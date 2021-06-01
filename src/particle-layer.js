@@ -37,7 +37,8 @@ export default class ParticleLayer extends LineLayer {
       ...super.getShaders(),
       inject: {
         'vs:#decl': `
-          attribute float instanceAges;
+          attribute float instanceIndex;
+          uniform float numParticles;
           uniform float maxAge;
           varying float drop;
           const vec2 DROP_POSITION = vec2(0);
@@ -46,7 +47,8 @@ export default class ParticleLayer extends LineLayer {
           drop = float(instanceSourcePositions.xy == DROP_POSITION || instanceTargetPositions.xy == DROP_POSITION);
         `,
         'vs:DECKGL_FILTER_COLOR': `
-          color = vec4(color.rgb, color.a * (1. - instanceAges / maxAge));
+          float age = floor(instanceIndex / numParticles);
+          color = vec4(color.rgb, color.a * (1. - age / maxAge));
         `,
         'fs:#decl': `
           varying float drop;
@@ -80,11 +82,6 @@ export default class ParticleLayer extends LineLayer {
         transition: true,
         accessor: 'getTargetPosition'
       },
-      instanceAges: {
-        size: 1,
-        type: GL.FLOAT,
-        update: () => undefined
-      },
     });
   }
 
@@ -103,8 +100,8 @@ export default class ParticleLayer extends LineLayer {
   }
 
   draw({uniforms}) {
-    const {maxAge, animate} = this.props;
-    const {sourcePositions, targetPositions, ages, model} = this.state;
+    const {numParticles, maxAge, animate} = this.props;
+    const {sourcePositions, targetPositions, indexes, model} = this.state;
 
     if (animate) {
       this._runTransformFeedback();
@@ -113,9 +110,10 @@ export default class ParticleLayer extends LineLayer {
     model.setAttributes({
       instanceSourcePositions: sourcePositions,
       instanceTargetPositions: targetPositions,
-      instanceAges: ages,
+      instanceIndex: indexes,
     });
     model.setUniforms({
+      numParticles,
       maxAge,
     });
 
@@ -138,13 +136,7 @@ export default class ParticleLayer extends LineLayer {
     const numAgedInstances = numParticles * (maxAge - 1);
     const sourcePositions = new Buffer(gl, new Float32Array(numInstances * 3));
     const targetPositions = new Buffer(gl, new Float32Array(numInstances * 3));
-    const ages = new Buffer(gl, {
-      data: new Float32Array(
-        new Array(maxAge).fill(undefined).map((_, age) => {
-          return new Array(numParticles).fill(age);
-        }).flat()
-      )
-    });
+    const indexes = new Buffer(gl, new Float32Array(new Array(numInstances).fill(undefined).map((_, i) => i)));
 
     const transform = new Transform(gl, {
       sourceBuffers: {
@@ -166,7 +158,7 @@ export default class ParticleLayer extends LineLayer {
       numAgedInstances,
       sourcePositions,
       targetPositions,
-      ages,
+      indexes,
       transform,
     });
   }
@@ -232,7 +224,7 @@ export default class ParticleLayer extends LineLayer {
   }
 
   _deleteTransformFeedback() {
-    const {initialized, sourcePositions, targetPositions, ages, transform} = this.state;
+    const {initialized, sourcePositions, targetPositions, indexes, transform} = this.state;
 
     if (!initialized) {
       return;
@@ -240,14 +232,14 @@ export default class ParticleLayer extends LineLayer {
 
     sourcePositions.delete();
     targetPositions.delete();
-    ages.delete();
+    indexes.delete();
     transform.delete();
 
     this.setState({
       initialized: true,
       sourcePositions: undefined,
       targetPositions: undefined,
-      ages: undefined,
+      indexes: undefined,
       transform: undefined,
     });
   }
