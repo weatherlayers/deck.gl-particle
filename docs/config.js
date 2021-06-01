@@ -10,7 +10,7 @@ export function initConfig() {
       speedFactor: 2,
       color: [255, 255, 255],
       width: 2,
-      opacity: 0.01,
+      opacity: 0.1,
       animate: true,
     },
   };
