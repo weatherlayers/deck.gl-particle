@@ -29,6 +29,7 @@
 
   <script type="module">
     import { initConfig, initGui, initFpsMeter } from './config.js';
+    import { Animation } from './animation.js';
 
     const landUrl = 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_50m_land.geojson';
     const colormapUrl = 'wind_colormap.png';
@@ -53,7 +54,7 @@
       });
 
       // animation
-      const rotateAnimation = new DeckGlParticle.Animation(() => {
+      const rotateAnimation = new Animation(() => {
         deckgl.setProps({
           initialViewState: {
             ...deckgl.props.initialViewState,
