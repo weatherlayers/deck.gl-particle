@@ -6,9 +6,7 @@
 
 Particle simulation layer for deck.gl
 
-**⚠️ This is a pre-release.**
-
-[Demo](https://zakjan.github.io/deck.gl-particle/)
+[Demo](https://kamzek.github.io/deck.gl-particle/)
 
 <img src="docs/screenshot@2x.jpg" alt="Screenshot" width="640" height="320">
 
@@ -39,4 +37,4 @@ const deckgl = new Deck({
 
 ## Weather layers as a service
 
-Interested in integrating weather layers into your existing map application? <a href="mailto:jan@kamzek.com">Get in touch for a private beta!</a>
+Interested in integrating weather layers into your existing map application? <a href="https://kamzek.com">Get in touch!</a>
