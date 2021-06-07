@@ -1,9 +1,6 @@
 export function initConfig() {
   return {
     rotate: false,
-    raster: {
-      opacity: 0.3,
-    },
     particle: {
       numParticles: 5000,
       maxAge: 25,
@@ -29,10 +26,6 @@ export function initGuiSimple(config, update, { globe } = {}) {
 
 export function initGui(config, update, { deckgl, globe } = {}) {
   const gui = initGuiSimple(config, update, { globe });
-
-  const raster = gui.addFolder('RasterLayer');
-  raster.add(config.raster, 'opacity', 0, 1, 0.01).onChange(update);
-  raster.open();
 
   const particle = gui.addFolder('ParticleLayer');
   particle.add(config.particle, 'numParticles', 0, 100000, 1).onFinishChange(update);

@@ -8,7 +8,7 @@ Particle simulation layer for deck.gl
 
 [Demo](https://kamzek.github.io/deck.gl-particle/)
 
-<img src="docs/screenshot@2x.jpg" alt="Screenshot" width="640" height="320">
+<img src="docs/screenshot@2x.png" alt="Screenshot" width="640" height="320">
 
 ## Usage
 

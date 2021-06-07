@@ -8,7 +8,6 @@
   <script src="https://unpkg.com/stats.js@0.17.0/build/stats.min.js"></script>
   <script src="https://unpkg.com/deck.gl@8.5.0-alpha.5/dist.min.js"></script>
   <script src="https://unpkg.com/@luma.gl/constants@8.4.5/dist/dist.min.js"></script>
-  <script src="./deck.gl-raster.min.js"></script>
   <script src="https://unpkg.com/deck.gl-particle@1.0.3/dist/deck.gl-particle.min.js"></script>
   <!-- <script src="../dist/deck.gl-particle.min.js"></script> -->
   <style>
@@ -31,8 +30,6 @@
     import { initConfig, initGui, initFpsMeter } from './config.js';
 
     const landUrl = 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_land.geojson';
-    const colormapUrl = 'wind_colormap.png';
-    const rasterUrl = 'wind_data.png';
     const particleUrl = 'wind_data.png';
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -47,7 +44,7 @@
           zoom: 0,
         },
         controller: {
-          normalize: false,
+          // normalize: false,
         },
         views: [
           new deck.MapView({ repeat: true }),
@@ -86,53 +83,6 @@
               stroked: false,
               filled: true,
               getFillColor: [26, 26, 26],
-            }),
-            new deck['gl-raster'].RasterLayer({
-              id: 'raster',
-              images: {
-                imageRgba: {
-                  data: rasterUrl,
-                  format: luma.GL.RGB,
-                  parameters: {
-                    [luma.GL.TEXTURE_MIN_FILTER]: luma.GL.LINEAR,
-                    [luma.GL.TEXTURE_MAG_FILTER]: luma.GL.LINEAR,
-                  },
-                },
-                imageColormap: {
-                  data: colormapUrl,
-                  format: luma.GL.RGBA,
-                  parameters: {
-                    [luma.GL.TEXTURE_MIN_FILTER]: luma.GL.LINEAR,
-                    [luma.GL.TEXTURE_MAG_FILTER]: luma.GL.LINEAR,
-                  },
-                },
-                imageMask: {
-                  data: rasterUrl,
-                  format: luma.GL.ALPHA,
-                  parameters: {
-                    [luma.GL.TEXTURE_MIN_FILTER]: luma.GL.LINEAR,
-                    [luma.GL.TEXTURE_MAG_FILTER]: luma.GL.LINEAR,
-                  },
-                },
-              },
-              modules: [
-                deck['gl-raster'].rgbaImage,
-                deck['gl-raster'].linearRescale,
-                deck['gl-raster'].vectorLength,
-                deck['gl-raster'].colormap,
-                deck['gl-raster'].maskImage,
-              ],
-              moduleProps: {
-                linearRescaleScaler: 2,
-                linearRescaleOffset: -1,
-                colormapScaler: 1,
-                colormapOffset: 0,
-              },
-              opacity: config.raster.opacity,
-              bounds: [-180, -90, 180, 90],
-              _imageCoordinateSystem: deck.COORDINATE_SYSTEM.LNGLAT,
-              extensions: [new deck.ClipExtension()],
-              clipBounds: [-360, -85.051129, 360, 85.051129],
             }),
             new deck.GeoJsonLayer({
               id: 'land',
