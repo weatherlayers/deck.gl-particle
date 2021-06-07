@@ -29,9 +29,6 @@
   <script type="module">
     import { initConfig, initGui, initFpsMeter } from './config.js';
 
-    const landUrl = 'https://d2ad6b4ur7yvpq.cloudfront.net/naturalearth-3.3.0/ne_110m_land.geojson';
-    const particleUrl = 'wind_data.png';
-
     window.addEventListener('DOMContentLoaded', () => {
       const config = initConfig();
 
@@ -76,30 +73,26 @@
       function update() {
         deckgl.setProps({
           layers: [
-            new deck.SolidPolygonLayer({
-              id: 'background',
-              data: [[[-180, 85.051129], [0, 85.051129], [180, 85.051129], [180, -85.051129], [0, -85.051129], [-180, -85.051129]]],
-              getPolygon: d => d,
-              stroked: false,
-              filled: true,
-              getFillColor: [26, 26, 26],
-            }),
-            new deck.GeoJsonLayer({
-              id: 'land',
-              data: landUrl,
-              stroked: true,
-              filled: false,
-              getLineColor: [255, 255, 255, 127],
-              getLineWidth: 1,
-              lineWidthUnits: 'pixels',
-              extensions: [new deck.ClipExtension()],
-              clipBounds: [-360, -85.051129, 360, 85.051129],
+            new deck.TileLayer({
+              id: 'basemap',
+              data: 'https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png',
+              minZoom: 0,
+              maxZoom: 19,
+              tileSize: 256,
+              renderSubLayers: props => {
+                const {bbox: {west, south, east, north}} = props.tile;
+                return new deck.BitmapLayer(props, {
+                  data: null,
+                  image: props.data,
+                  bounds: [west, south, east, north]
+                });
+              },
             }),
             new DeckGlParticle.ParticleLayer({
               id: 'particle',
               maxAge: config.particle.maxAge,
               numParticles: config.particle.numParticles,
-              image: particleUrl,
+              image: 'wind_data.png',
               speedFactor: config.particle.speedFactor,
               color: config.particle.color,
               width: config.particle.width,

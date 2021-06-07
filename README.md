@@ -16,13 +16,11 @@ Particle simulation layer for deck.gl
 import { Deck } from '@deck.gl/core';
 import { ParticleLayer } from 'deck.gl-particle';
 
-const particleUrl = ...; // string
-
 const deckgl = new Deck({
   layers: [
     new ParticleLayer({
       id: 'particle',
-      image: particleUrl,
+      image: ..., // string (URL)
       numParticles: ..., // number
       maxAge: ..., // number
       speedFactor: ..., // number
