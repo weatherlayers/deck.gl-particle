@@ -1,5 +1,7 @@
 # Changelog
 
+- reset transform feedback on changing the image
+
 ## 1.0.3
 
 - limit FPS
