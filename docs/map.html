@@ -66,7 +66,9 @@
       });
 
       // attribution
-      const attributionControl = new AttributionControl('Data by <a href="https://nomads.ncep.noaa.gov/txt_descriptions/GFS_doc.shtml">NOAA GFS</a> | Basemap © <a href="https://carto.com/attribution">CARTO</a>, © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors');
+      const basemapAttributionControl = new AttributionControl('© <a href="https://carto.com/attribution">CARTO</a>, © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors');
+      document.getElementById('bottom-right').prepend(basemapAttributionControl.onAdd());
+      const attributionControl = new AttributionControl('Data by <a href="https://nomads.ncep.noaa.gov/txt_descriptions/GFS_doc.shtml">NOAA GFS</a>');
       document.getElementById('bottom-right').prepend(attributionControl.onAdd());
 
       // FPS meter
