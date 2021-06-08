@@ -39,17 +39,3 @@ export function initGui(config, update, { deckgl, globe } = {}) {
   particle.add({ clear: () => deckgl.props.layers.find(x => x.id === 'particle')?.clear() }, 'clear');
   particle.open();
 }
-
-export function initFpsMeter() {
-  const stats = new Stats();
-  stats.showPanel(0);
-  stats.dom.style.top = '';
-  stats.dom.style.left = '';
-  stats.dom.style.right = '0';
-  stats.dom.style.bottom = '0';
-  document.body.appendChild(stats.dom);
-  window.requestAnimationFrame(function updateFps() {
-    stats.update();
-    window.requestAnimationFrame(updateFps);
-  });
-}

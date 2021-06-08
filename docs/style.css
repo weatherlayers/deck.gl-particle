@@ -1,0 +1,18 @@
+body {
+  margin: 0;
+  background: #000;
+}
+#deck {
+  width: 100vw;
+  height: 100vh;
+}
+#bottom-right {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  text-align: right;
+}
+#bottom-right > .fps {
+  left: auto !important;
+  right: 0;
+}

@@ -10,28 +10,24 @@
   <script src="https://unpkg.com/@luma.gl/constants@8.4.5/dist/dist.min.js"></script>
   <script src="https://unpkg.com/deck.gl-particle@1.0.3/dist/deck.gl-particle.min.js"></script>
   <!-- <script src="../dist/deck.gl-particle.min.js"></script> -->
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-    }
-
-    #deck {
-      width: 100vw;
-      height: 100vh;
-    }
-  </style>
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./attribution.css">
+  <link rel="stylesheet" href="./fps-meter.css">
 </head>
 
 <body>
   <div id="deck"></div>
+  <div id="bottom-right"></div>
 
   <script type="module">
-    import { initConfig, initGui, initFpsMeter } from './config.js';
+    import { AttributionControl } from './attribution.js';
+    import { FpsMeterControl } from './fps-meter.js';
+    import { initConfig, initGui } from './config.js';
 
     window.addEventListener('DOMContentLoaded', () => {
       const config = initConfig();
 
+      // animated deck.gl
       let lastRenderTime = 0;
       const deckgl = new deck.Deck({
         parent: document.getElementById('deck'),
@@ -41,7 +37,7 @@
           zoom: 0,
         },
         controller: {
-          // normalize: false,
+          normalize: false,
         },
         views: [
           new deck.MapView({ repeat: true }),
@@ -68,6 +64,14 @@
           }
         },
       });
+
+      // attribution
+      const attributionControl = new AttributionControl('Data by <a href="https://nomads.ncep.noaa.gov/txt_descriptions/GFS_doc.shtml">NOAA GFS</a> | Basemap © <a href="https://carto.com/attribution">CARTO</a>, © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors');
+      document.getElementById('bottom-right').prepend(attributionControl.onAdd());
+
+      // FPS meter
+      const fpsMeterControl = new FpsMeterControl();
+      document.getElementById('bottom-right').prepend(fpsMeterControl.onAdd());
 
       // config
       function update() {
@@ -106,7 +110,6 @@
       }
       update();
       initGui(config, update, { deckgl });
-      initFpsMeter();
     });
   </script>
 </body>

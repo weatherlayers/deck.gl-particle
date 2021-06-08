@@ -12,6 +12,8 @@ Particle simulation layer for deck.gl
 
 ## Usage
 
+Image contains particle speeds in [deck.gl COORDINATE_SYSTEM.LNGLAT](https://deck.gl/docs/developer-guide/coordinate-systems#supported-coordinate-systems), u component encoded into R channel, v component encoded into G channel. See [sample image](docs/wind_data.png).
+
 ```
 import { Deck } from '@deck.gl/core';
 import { ParticleLayer } from 'deck.gl-particle';
@@ -20,7 +22,7 @@ const deckgl = new Deck({
   layers: [
     new ParticleLayer({
       id: 'particle',
-      image: ..., // string (URL)
+      image: ..., // see deck.gl BitmapLayer image property
       numParticles: ..., // number
       maxAge: ..., // number
       speedFactor: ..., // number
@@ -32,6 +34,11 @@ const deckgl = new Deck({
   _animate: true,
 });
 ```
+
+## Credits
+
+- [Nicolas Belmonte: Wind Map](https://medium.com/vis-gl/wind-map-a58575f87fe3)
+- [Vladimir Agafonkin: How I built a wind map with WebGL](https://blog.mapbox.com/how-i-built-a-wind-map-with-webgl-b63022b5537f)
 
 ## Weather layers as a service
 
