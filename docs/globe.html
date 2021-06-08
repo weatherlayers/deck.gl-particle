@@ -95,6 +95,10 @@
                   bounds: [west, south, east, north]
                 });
               },
+              parameters: {
+                cull: true,
+                depthTest: false,
+              },
             }),
             new DeckGlParticle.ParticleLayer({
               id: 'particle',
