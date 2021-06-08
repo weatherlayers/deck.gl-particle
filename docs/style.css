@@ -12,7 +12,3 @@ body {
   right: 0;
   text-align: right;
 }
-#bottom-right > .fps {
-  left: auto !important;
-  right: 0;
-}
