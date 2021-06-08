@@ -225,7 +225,7 @@ export default class ParticleLayer extends LineLayer {
     transform.delete();
 
     this.setState({
-      initialized: true,
+      initialized: false,
       sourcePositions: undefined,
       targetPositions: undefined,
       colors: undefined,
