@@ -35,11 +35,11 @@ const deckgl = new Deck({
 });
 ```
 
-## Credits
+## Inspired by
 
 - [Nicolas Belmonte: Wind Map](https://medium.com/vis-gl/wind-map-a58575f87fe3)
 - [Vladimir Agafonkin: How I built a wind map with WebGL](https://blog.mapbox.com/how-i-built-a-wind-map-with-webgl-b63022b5537f)
 
 ## Weather layers as a service
 
-Interested in integrating weather layers into your existing map application? <a href="https://kamzek.com">Get in touch!</a>
+[WeatherLayers.com](https://weatherlayers.com/)
