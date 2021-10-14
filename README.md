@@ -42,4 +42,4 @@ const deckgl = new Deck({
 
 ## Weather layers as a service
 
-[WeatherLayers.com](https://weatherlayers.com/)
+There is a commercial library with particle layer improvements and additional layers available with [WeatherLayers.com](https://weatherlayers.com/) subscription.
