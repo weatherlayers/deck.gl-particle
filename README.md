@@ -35,11 +35,13 @@ const deckgl = new Deck({
 });
 ```
 
+Requires WebGL 2 (Chrome, Firefox, Edge, Safari 15).
+
 ## Inspired by
 
 - [Nicolas Belmonte: Wind Map](https://medium.com/vis-gl/wind-map-a58575f87fe3)
 - [Vladimir Agafonkin: How I built a wind map with WebGL](https://blog.mapbox.com/how-i-built-a-wind-map-with-webgl-b63022b5537f)
 
-## Weather layers as a service
+## Weather map visualization layers as a service
 
 There is a commercial library with particle layer improvements and additional layers available with [WeatherLayers.com](https://weatherlayers.com/) subscription.
