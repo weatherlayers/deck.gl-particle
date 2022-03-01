@@ -7,9 +7,9 @@
     "particle",
     "wind"
   ],
-  "author": "Jan Zak <jan@kamzek.com>",
+  "author": "WeatherLayers.com <info@weatherlayers.com>",
   "license": "MPL-2.0",
-  "repository": "github:kamzek/deck.gl-particle",
+  "repository": "github:weatherlayers/deck.gl-particle",
   "main": "src/index.js",
   "browser": "dist/deck.gl-particle.min.js",
   "scripts": {
