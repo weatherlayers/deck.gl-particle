@@ -1,4 +1,5 @@
 import pkg from './package.json';
+import alias from '@rollup/plugin-alias';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import babel from '@rollup/plugin-babel';
@@ -17,7 +18,6 @@ function bundle(filename, options = {}) {
         '@deck.gl/core': 'deck',
         '@deck.gl/layers': 'deck',
         '@luma.gl/core': 'luma',
-        '@luma.gl/constants': 'luma.GL',
       },
       banner: `/*!
 * Copyright (c) 2021 WeatherLayers.com
@@ -31,6 +31,11 @@ function bundle(filename, options = {}) {
       ...Object.keys(pkg.peerDependencies),
     ],
     plugins: [
+      alias({
+        entries: [
+          { find: '@luma.gl/constants', replacement: __dirname + '/src/gl.js' },
+        ],
+      }),
       resolve(),
       commonjs(),
       babel({ babelHelpers: 'runtime' }),
