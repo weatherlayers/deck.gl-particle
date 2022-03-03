@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.5
+
+- update dependencies
+
 ## 1.0.4
 
 - reset transform feedback on changing the image
