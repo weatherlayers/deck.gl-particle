@@ -42,5 +42,8 @@
     "@deck.gl/core": "^8.0.0",
     "@deck.gl/layers": "^8.0.0",
     "@luma.gl/core": "^8.0.0"
+  },
+  "dependencies": {
+    "geodesy-fn": "^1.0.1"
   }
 }
