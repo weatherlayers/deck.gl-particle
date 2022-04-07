@@ -88,7 +88,7 @@ export default class ParticleLayer extends LineLayer {
 
   draw({uniforms}) {
     const {animate} = this.props;
-    const {sourcePositions, targetPositions, colors, widths, model} = this.state;
+    const {sourcePositions, targetPositions, sourcePositions64Low, targetPositions64Low, colors, widths, model} = this.state;
 
     if (animate) {
       this._runTransformFeedback();
@@ -97,6 +97,8 @@ export default class ParticleLayer extends LineLayer {
     model.setAttributes({
       instanceSourcePositions: sourcePositions,
       instanceTargetPositions: targetPositions,
+      instanceSourcePositions64Low: sourcePositions64Low,
+      instanceTargetPositions64Low: targetPositions64Low,
       instanceColors: colors,
       instanceWidths: widths,
     });
@@ -116,10 +118,13 @@ export default class ParticleLayer extends LineLayer {
     // sourcePositions/targetPositions buffer layout:
     // |          age0         |          age1         |          age2         |...|          ageN         |
     // |pos1,pos2,pos3,...,posN|pos1,pos2,pos3,...,posN|pos1,pos2,pos3,...,posN|...|pos1,pos2,pos3,...,posN|
+    // 64-bit low buffers are currently unused, but required for PROJECTION_MODE.WEB_MERCATOR_AUTO_OFFSET
     const numInstances = numParticles * maxAge;
     const numAgedInstances = numParticles * (maxAge - 1);
     const sourcePositions = new Buffer(gl, new Float32Array(numInstances * 3));
     const targetPositions = new Buffer(gl, new Float32Array(numInstances * 3));
+    const sourcePositions64Low = new Buffer(gl, new Float32Array(numInstances * 3));
+    const targetPositions64Low = new Buffer(gl, new Float32Array(numInstances * 3));
     const colors = new Buffer(gl, new Float32Array(new Array(numInstances).fill(undefined).map((_, i) => {
       const age = Math.floor(i / numParticles);
       return [color[0], color[1], color[2], (color[3] ?? 255) * (1 - age / maxAge)].map(d => d / 255);
@@ -146,6 +151,8 @@ export default class ParticleLayer extends LineLayer {
       numAgedInstances,
       sourcePositions,
       targetPositions,
+      sourcePositions64Low,
+      targetPositions64Low,
       colors,
       widths,
       transform,
@@ -213,7 +220,7 @@ export default class ParticleLayer extends LineLayer {
   }
 
   _deleteTransformFeedback() {
-    const {initialized, sourcePositions, targetPositions, colors, widths, transform} = this.state;
+    const {initialized, sourcePositions, targetPositions, sourcePositions64Low, targetPositions64Low, colors, widths, transform} = this.state;
 
     if (!initialized) {
       return;
@@ -221,6 +228,8 @@ export default class ParticleLayer extends LineLayer {
 
     sourcePositions.delete();
     targetPositions.delete();
+    sourcePositions64Low.delete();
+    targetPositions64Low.delete();
     colors.delete();
     widths.delete();
     transform.delete();
@@ -229,6 +238,8 @@ export default class ParticleLayer extends LineLayer {
       initialized: false,
       sourcePositions: undefined,
       targetPositions: undefined,
+      sourcePositions64Low: undefined,
+      targetPositions64Low: undefined,
       colors: undefined,
       widths: undefined,
       transform: undefined,
@@ -242,10 +253,12 @@ export default class ParticleLayer extends LineLayer {
   }
 
   clear() {
-    const {numInstances, sourcePositions, targetPositions} = this.state;
+    const {numInstances, sourcePositions, targetPositions, sourcePositions64Low, targetPositions64Low} = this.state;
 
     sourcePositions.subData({data: new Float32Array(numInstances * 3)});
     targetPositions.subData({data: new Float32Array(numInstances * 3)});
+    sourcePositions64Low.subData({data: new Float32Array(numInstances * 3)});
+    targetPositions64Low.subData({data: new Float32Array(numInstances * 3)});
 
     this.setNeedsRedraw();
   }
