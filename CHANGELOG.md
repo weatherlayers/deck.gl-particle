@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.8
+
+- fix @luma.gl/core dependency version
+
 ## 1.0.7
 
 - fix @luma.gl/core dependency version
