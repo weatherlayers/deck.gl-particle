@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.7
+
+- fix @luma.gl/core dependency version
+
 ## 1.0.6
 
 - fix particles in auto-offset mode
