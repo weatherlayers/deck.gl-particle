@@ -41,7 +41,7 @@
   "peerDependencies": {
     "@deck.gl/core": "^8.7.0",
     "@deck.gl/layers": "^8.7.0",
-    "@luma.gl/core": "^8.7.0"
+    "@luma.gl/core": "^8.5.10"
   },
   "dependencies": {
     "geodesy-fn": "^1.0.1"
