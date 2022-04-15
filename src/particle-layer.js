@@ -7,7 +7,7 @@
  */
 import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {LineLayer} from '@deck.gl/layers';
-import {Buffer, Transform} from '@luma.gl/core';
+import {isWebGL2, Buffer, Transform} from '@luma.gl/core';
 import GL from '@luma.gl/constants';
 
 import {distance} from './geodesy';
@@ -58,6 +58,11 @@ export default class ParticleLayer extends LineLayer {
   }
 
   initializeState() {
+    const {gl} = this.context;
+    if (!isWebGL2(gl)) {
+      throw new Error('WebGL 2 is required');
+    }
+
     super.initializeState({});
 
     this._setupTransformFeedback();
@@ -67,14 +72,23 @@ export default class ParticleLayer extends LineLayer {
   }
 
   updateState({props, oldProps, changeFlags}) {
+    const {numParticles, maxAge, color, width} = props;
+
     super.updateState({props, oldProps, changeFlags});
 
+    if (!numParticles || !maxAge || !width) {
+      this._deleteTransformFeedback();
+      return;
+    }
+
     if (
-      props.image !== oldProps.image ||
-      props.numParticles !== oldProps.numParticles ||
-      props.maxAge !== oldProps.maxAge ||
-      props.color !== oldProps.color ||
-      props.width !== oldProps.width
+      numParticles !== oldProps.numParticles ||
+      maxAge !== oldProps.maxAge ||
+      color[0] !== oldProps.color[0] ||
+      color[1] !== oldProps.color[1] ||
+      color[2] !== oldProps.color[2] ||
+      color[3] !== oldProps.color[3] ||
+      width !== oldProps.width
     ) {
       this._setupTransformFeedback();
     }
@@ -87,6 +101,16 @@ export default class ParticleLayer extends LineLayer {
   }
 
   draw({uniforms}) {
+    const {gl} = this.context;
+    if (!isWebGL2(gl)) {
+      return;
+    }
+
+    const {initialized} = this.state;
+    if (!initialized) {
+      return;
+    }
+
     const {animate} = this.props;
     const {sourcePositions, targetPositions, sourcePositions64Low, targetPositions64Low, colors, widths, model} = this.state;
 
@@ -108,12 +132,16 @@ export default class ParticleLayer extends LineLayer {
 
   _setupTransformFeedback() {
     const {gl} = this.context;
-    const {numParticles, maxAge, color, width} = this.props;
+    if (!isWebGL2(gl)) {
+      return;
+    }
+
     const {initialized} = this.state;
-    
     if (initialized) {
       this._deleteTransformFeedback();
     }
+
+    const {numParticles, maxAge, color, width} = this.props;
 
     // sourcePositions/targetPositions buffer layout:
     // |          age0         |          age1         |          age2         |...|          ageN         |
@@ -141,7 +169,7 @@ export default class ParticleLayer extends LineLayer {
         sourcePosition: 'targetPosition',
       },
       vs: updateTransformVs,
-      elementCount: numInstances,
+      elementCount: numParticles,
     });
 
     this.setState({
@@ -159,20 +187,30 @@ export default class ParticleLayer extends LineLayer {
   }
 
   _runTransformFeedback() {
-    const {gl, viewport, timeline} = this.context;
+    const {gl} = this.context;
+    if (!isWebGL2(gl)) {
+      return;
+    }
+
+    const {initialized} = this.state;
+    if (!initialized) {
+      return;
+    }
+
+    const {viewport, timeline} = this.context;
     const {image, bounds, numParticles, speedFactor, maxAge} = this.props;
     const {numAgedInstances, transform} = this.state;
-
     if (!image) {
       return;
     }
 
-    const viewportSphere = viewport.resolution ? 1 : 0; // globe
-    const viewportSphereCenter = [viewport.longitude, viewport.latitude];
-    const viewportSphereRadius = Math.max(
-      distance(viewportSphereCenter, viewport.unproject([0, 0])),
-      distance(viewportSphereCenter, viewport.unproject([viewport.width / 2, 0])),
-      distance(viewportSphereCenter, viewport.unproject([0, viewport.height / 2])),
+    // viewport
+    const viewportGlobe = viewport.resolution ? 1 : 0;
+    const viewportGlobeCenter = [viewport.longitude, viewport.latitude];
+    const viewportGlobeRadius = Math.max(
+      distance(viewportGlobeCenter, viewport.unproject([0, 0])),
+      distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2, 0])),
+      distance(viewportGlobeCenter, viewport.unproject([0, viewport.height / 2])),
     );
     const viewportBounds = viewport.getBounds();
     // viewportBounds[0] = Math.max(viewportBounds[0], -180);
@@ -184,8 +222,26 @@ export default class ParticleLayer extends LineLayer {
     const devicePixelRatio = gl.luma.canvasSizeInfo.devicePixelRatio;
     const viewportSpeedFactor = speedFactor * devicePixelRatio / 2 ** viewport.zoom;
 
-    // age particles
-    // copy age0-age(N-1) targetPositions to age1-ageN sourcePositions
+    // update particles age0
+    const uniforms = {
+      speedTexture: image,
+      bounds,
+      numParticles,
+      maxAge,
+
+      viewportGlobe,
+      viewportGlobeCenter,
+      viewportGlobeRadius,
+      viewportBounds,
+      viewportSpeedFactor,
+
+      time: timeline.getTime(),
+      seed: Math.random(),
+    };
+    transform.run({uniforms});
+
+    // update particles age1-age(N-1)
+    // copy age0-age(N-2) sourcePositions to age1-age(N-1) targetPositions
     const sourcePositions = transform.bufferTransform.bindings[transform.bufferTransform.currentIndex].sourceBuffers.sourcePosition;
     const targetPositions = transform.bufferTransform.bindings[transform.bufferTransform.currentIndex].feedbackBuffers.targetPosition;
     sourcePositions.copyData({
@@ -195,35 +251,41 @@ export default class ParticleLayer extends LineLayer {
       size: numAgedInstances * 4 * 3,
     });
 
-    // update particles
-    const uniforms = {
-      speedTexture: image,
-      bounds,
-      numParticles,
-      maxAge,
-
-      viewportSphere,
-      viewportSphereCenter,
-      viewportSphereRadius,
-      viewportBounds,
-      viewportSpeedFactor,
-
-      time: timeline.getTime(),
-      seed: Math.random(),
-    };
-    transform.run({uniforms});
     transform.swap();
 
     // const {sourcePositions, targetPositions} = this.state;
     // console.log(uniforms, sourcePositions.getData().slice(0, 6), targetPositions.getData().slice(0, 6));
   }
 
-  _deleteTransformFeedback() {
-    const {initialized, sourcePositions, targetPositions, colors, transform} = this.state;
+  _resetTransformFeedback() {
+    const {gl} = this.context;
+    if (!isWebGL2(gl)) {
+      return;
+    }
 
+    const {initialized} = this.state;
     if (!initialized) {
       return;
     }
+
+    const {numInstances, sourcePositions, targetPositions} = this.state;
+
+    sourcePositions.subData({data: new Float32Array(numInstances * 3)});
+    targetPositions.subData({data: new Float32Array(numInstances * 3)});
+  }
+
+  _deleteTransformFeedback() {
+    const {gl} = this.context;
+    if (!isWebGL2(gl)) {
+      return;
+    }
+
+    const {initialized} = this.state;
+    if (!initialized) {
+      return;
+    }
+
+    const {sourcePositions, targetPositions, colors, transform} = this.state;
 
     sourcePositions.delete();
     targetPositions.delete();
@@ -249,10 +311,7 @@ export default class ParticleLayer extends LineLayer {
   }
 
   clear() {
-    const {numInstances, sourcePositions, targetPositions} = this.state;
-
-    sourcePositions.subData({data: new Float32Array(numInstances * 3)});
-    targetPositions.subData({data: new Float32Array(numInstances * 3)});
+    this._resetTransformFeedback();
 
     this.setNeedsRedraw();
   }

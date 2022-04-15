@@ -20,9 +20,9 @@ uniform vec4 bounds;
 uniform float numParticles;
 uniform float maxAge;
 
-uniform float viewportSphere;
-uniform vec2 viewportSphereCenter;
-uniform float viewportSphereRadius;
+uniform float viewportGlobe;
+uniform vec2 viewportGlobeCenter;
+uniform float viewportGlobeRadius;
 uniform vec4 viewportBounds;
 uniform float viewportSpeedFactor;
 
@@ -90,11 +90,11 @@ vec2 randVec2(vec2 seed) {
 vec2 randPosition(vec2 seed) {
   vec2 randomVec2 = randVec2(seed);
   
-  if (viewportSphere > 0.5) {
+  if (viewportGlobe > 0.5) {
     randomVec2.x += 0.0001; // prevent generating point in the center
-    float dist = sqrt(randomVec2.x) * viewportSphereRadius;
+    float dist = sqrt(randomVec2.x) * viewportGlobeRadius;
     float bearing = randomVec2.y * 360.;
-    return destinationPoint(viewportSphereCenter, dist, bearing);
+    return destinationPoint(viewportGlobeCenter, dist, bearing);
   } else {
     vec2 viewportBoundsMin = viewportBounds.xy;
     vec2 viewportBoundsMax = viewportBounds.zw;
@@ -103,8 +103,8 @@ vec2 randPosition(vec2 seed) {
 }
 
 bool isPositionVisible(vec2 position) {
-  if (viewportSphere > 0.5) {
-    return distanceTo(viewportSphereCenter, position) <= viewportSphereRadius;
+  if (viewportGlobe > 0.5) {
+    return distanceTo(viewportGlobeCenter, position) <= viewportGlobeRadius;
   } else {
     vec2 viewportBoundsMin = viewportBounds.xy;
     vec2 viewportBoundsMax = viewportBounds.zw;
