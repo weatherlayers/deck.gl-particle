@@ -1,5 +1,7 @@
 # Changelog
 
+- use constant vertex attributes to optimize memory usage
+
 ## 1.0.8
 
 - fix @luma.gl/core dependency version
