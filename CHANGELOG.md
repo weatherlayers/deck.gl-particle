@@ -1,5 +1,7 @@
 # Changelog
 
+- animate internally so that deck.gl _animate is not necessary anymore
+
 ## 1.0.9
 
 - use constant vertex attributes to optimize memory usage

@@ -13,6 +13,8 @@ import GL from '@luma.gl/constants';
 import {distance} from './geodesy';
 import updateTransformVs from './particle-layer-update-transform.vs.glsl';
 
+const FPS = 30;
+
 const DEFAULT_TEXTURE_PARAMETERS = {
   [GL.TEXTURE_WRAP_S]: GL.REPEAT,
 };
@@ -114,10 +116,6 @@ export default class ParticleLayer extends LineLayer {
     const {animate} = this.props;
     const {sourcePositions, targetPositions, sourcePositions64Low, targetPositions64Low, colors, widths, model} = this.state;
 
-    if (animate) {
-      this._runTransformFeedback();
-    }
-
     model.setAttributes({
       instanceSourcePositions: sourcePositions,
       instanceTargetPositions: targetPositions,
@@ -128,6 +126,10 @@ export default class ParticleLayer extends LineLayer {
     });
 
     super.draw({uniforms});
+
+    if (animate) {
+      this.requestStep();
+    }
   }
 
   _setupTransformFeedback() {
@@ -199,8 +201,9 @@ export default class ParticleLayer extends LineLayer {
 
     const {viewport, timeline} = this.context;
     const {image, bounds, numParticles, speedFactor, maxAge} = this.props;
-    const {numAgedInstances, transform} = this.state;
-    if (!image) {
+    const {numAgedInstances, transform, previousTime} = this.state;
+    const time = timeline.getTime();
+    if (!image || time === previousTime) {
       return;
     }
 
@@ -235,7 +238,7 @@ export default class ParticleLayer extends LineLayer {
       viewportBounds,
       viewportSpeedFactor,
 
-      time: timeline.getTime(),
+      time,
       seed: Math.random(),
     };
     transform.run({uniforms});
@@ -255,6 +258,8 @@ export default class ParticleLayer extends LineLayer {
 
     // const {sourcePositions, targetPositions} = this.state;
     // console.log(uniforms, sourcePositions.getData().slice(0, 6), targetPositions.getData().slice(0, 6));
+
+    this.state.previousTime = time;
   }
 
   _resetTransformFeedback() {
@@ -302,6 +307,19 @@ export default class ParticleLayer extends LineLayer {
       widths: undefined,
       transform: undefined,
     });
+  }
+
+  requestStep() {
+    const {stepRequested} = this.state;
+    if (stepRequested) {
+      return;
+    }
+
+    this.state.stepRequested = true;
+    setTimeout(() => {
+      this.step();
+      this.state.stepRequested = false;
+    }, 1000 / FPS);
   }
 
   step() {

@@ -51,17 +51,6 @@
             return !!viewport.subViewports;
           }
         },
-        _customRender: redrawReason => {
-          // limit FPS
-          const fps = 30;
-          const fpsInterval = 1000 / fps;
-          const now = Date.now();
-          const elapsed = now - lastRenderTime;
-          if (elapsed > fpsInterval) {
-            lastRenderTime = now;
-            deckgl._drawLayers(redrawReason);
-          }
-        },
       });
 
       // attribution
@@ -106,7 +95,6 @@
               getPolygonOffset: ({ layerIndex }) => [0, -1000], // layerIndex is per view
             }),
           ],
-          _animate: config.particle.animate,
         });
       }
       update();

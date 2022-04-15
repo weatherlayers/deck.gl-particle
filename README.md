@@ -29,7 +29,6 @@ const deckgl = new Deck({
       opacity: ..., // number
     });
   ],
-  _animate: true,
 });
 ```
 
