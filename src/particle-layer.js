@@ -7,7 +7,7 @@
  */
 import {LineLayer} from '@deck.gl/layers';
 import {isWebGL2, Buffer, Transform} from '@luma.gl/core';
-import {distance} from './geodesy';
+import {isViewportGlobe, getViewportGlobeCenter, getViewportGlobeRadius, getViewportBounds} from './utils/viewport';
 import updateTransformVs from './particle-layer-update-transform.vs.glsl';
 
 const FPS = 30;
@@ -203,18 +203,10 @@ export default class ParticleLayer extends LineLayer {
     }
 
     // viewport
-    const viewportGlobe = !!viewport.resolution;
-    const viewportGlobeCenter = [viewport.longitude, viewport.latitude];
-    const viewportGlobeRadius = Math.max(
-      distance(viewportGlobeCenter, viewport.unproject([0, 0])),
-      distance(viewportGlobeCenter, viewport.unproject([viewport.width / 2, 0])),
-      distance(viewportGlobeCenter, viewport.unproject([0, viewport.height / 2])),
-    );
-    const viewportBounds = viewport.getBounds();
-    // viewportBounds[0] = Math.max(viewportBounds[0], -180);
-    viewportBounds[1] = Math.max(viewportBounds[1], -85.051129);
-    // viewportBounds[2] = Math.min(viewportBounds[2], 180);
-    viewportBounds[3] = Math.min(viewportBounds[3], 85.051129);
+    const viewportGlobe = isViewportGlobe(viewport);
+    const viewportGlobeCenter = getViewportGlobeCenter(viewport);
+    const viewportGlobeRadius = getViewportGlobeRadius(viewport);
+    const viewportBounds = getViewportBounds(viewport);
 
     // speed factor for current zoom level
     const currentSpeedFactor = speedFactor / 2 ** (viewport.zoom + 7);
