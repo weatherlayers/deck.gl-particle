@@ -1,6 +1,8 @@
 body {
   margin: 0;
-  background: #000;
+  font-family: 'Lucida Grande', sans-serif;
+  font-size: 12px;
+  background: rgb(41, 41, 41);
 }
 #deck {
   width: 100vw;

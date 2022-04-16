@@ -11,16 +11,19 @@
   <!-- <script src="../dist/deck.gl-particle.min.js"></script> -->
   <link rel="stylesheet" href="./style.css">
   <link rel="stylesheet" href="./attribution.css">
+  <link rel="stylesheet" href="./info.css">
   <link rel="stylesheet" href="./fps-meter.css">
 </head>
 
 <body>
   <div id="deck"></div>
+  <div id="top-left"></div>
   <div id="bottom-right"></div>
 
   <script type="module">
     import { Animation } from './animation.js';
     import { AttributionControl } from './attribution.js';
+    import { InfoControl } from './info-control.js';
     import { FpsMeterControl } from './fps-meter.js';
     import { initConfig, initGui } from './config.js';
 
@@ -58,6 +61,10 @@
       document.getElementById('bottom-right').prepend(basemapAttributionControl.onAdd());
       const attributionControl = new AttributionControl('Data by <a href="https://nomads.ncep.noaa.gov/txt_descriptions/GFS_doc.shtml">NOAA GFS</a>');
       document.getElementById('bottom-right').prepend(attributionControl.onAdd());
+
+      // info panels
+      const infoControl = new InfoControl({ deckgl });
+      document.getElementById('top-left').prepend(infoControl.onAdd());
 
       // FPS meter
       const fpsMeterControl = new FpsMeterControl();
