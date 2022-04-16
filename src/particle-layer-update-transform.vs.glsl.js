@@ -18,6 +18,7 @@ uniform bool viewportGlobe;
 uniform vec2 viewportGlobeCenter;
 uniform float viewportGlobeRadius;
 uniform vec4 viewportBounds;
+uniform float viewportZoomChangeFactor;
 
 uniform sampler2D bitmapTexture;
 uniform vec2 imageUnscale;
@@ -174,6 +175,12 @@ void main() {
 
   if (!isPositionVisible(sourcePosition.xy)) {
     // drop out of bounds
+    targetPosition.xy = DROP_POSITION;
+    return;
+  }
+
+  if (viewportZoomChangeFactor > 1. && mod(particleIndex, viewportZoomChangeFactor) >= 1.) {
+    // drop when zooming out
     targetPosition.xy = DROP_POSITION;
     return;
   }

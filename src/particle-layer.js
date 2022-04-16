@@ -196,7 +196,7 @@ export default class ParticleLayer extends LineLayer {
 
     const {viewport, timeline} = this.context;
     const {image, imageUnscale, bounds, numParticles, speedFactor, maxAge} = this.props;
-    const {numAgedInstances, transform, previousTime} = this.state;
+    const {numAgedInstances, transform, previousViewportZoom, previousTime} = this.state;
     const time = timeline.getTime();
     if (!image || time === previousTime) {
       return;
@@ -207,6 +207,7 @@ export default class ParticleLayer extends LineLayer {
     const viewportGlobeCenter = getViewportGlobeCenter(viewport);
     const viewportGlobeRadius = getViewportGlobeRadius(viewport);
     const viewportBounds = getViewportBounds(viewport);
+    const viewportZoomChangeFactor = 2 ** ((previousViewportZoom - viewport.zoom) * 4);
 
     // speed factor for current zoom level
     const currentSpeedFactor = speedFactor / 2 ** (viewport.zoom + 7);
@@ -217,6 +218,7 @@ export default class ParticleLayer extends LineLayer {
       viewportGlobeCenter: viewportGlobeCenter || [0, 0],
       viewportGlobeRadius: viewportGlobeRadius || 0,
       viewportBounds: viewportBounds || [0, 0, 0, 0],
+      viewportZoomChangeFactor: viewportZoomChangeFactor || 0,
 
       bitmapTexture: image,
       imageUnscale: imageUnscale || [0, 0],
@@ -246,6 +248,7 @@ export default class ParticleLayer extends LineLayer {
     // const {sourcePositions, targetPositions} = this.state;
     // console.log(uniforms, sourcePositions.getData().slice(0, 6), targetPositions.getData().slice(0, 6));
 
+    this.state.previousViewportZoom = viewport.zoom;
     this.state.previousTime = time;
   }
 
