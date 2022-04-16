@@ -39,18 +39,9 @@
           normalize: false,
         },
         views: [
-          new deck.MapView({ id: 'map1', repeat: true }),
-          new deck.MapView({ id: 'map2', viewState: 'map1' }),
+          new deck.MapView({ repeat: true }),
         ],
         layers: [],
-        layerFilter: ({ layer, viewport }) => {
-          // render particle layer in non-repeated MapView
-          if (layer.id == 'particle') {
-            return !viewport.subViewports;
-          } else {
-            return !!viewport.subViewports;
-          }
-        },
       });
 
       // attribution
@@ -87,6 +78,7 @@
               maxAge: config.particle.maxAge,
               numParticles: config.particle.numParticles,
               image: 'wind_data.png',
+              imageUnscale: [-128, 127],
               speedFactor: config.particle.speedFactor,
               color: config.particle.color,
               width: config.particle.width,

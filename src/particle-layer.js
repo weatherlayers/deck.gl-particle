@@ -5,19 +5,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
-import {COORDINATE_SYSTEM} from '@deck.gl/core';
 import {LineLayer} from '@deck.gl/layers';
 import {isWebGL2, Buffer, Transform} from '@luma.gl/core';
-import GL from '@luma.gl/constants';
-
 import {distance} from './geodesy';
 import updateTransformVs from './particle-layer-update-transform.vs.glsl';
 
 const FPS = 30;
-
-const DEFAULT_TEXTURE_PARAMETERS = {
-  [GL.TEXTURE_WRAP_S]: GL.REPEAT,
-};
 
 const DEFAULT_COLOR = [255, 255, 255, 255];
 
@@ -25,16 +18,18 @@ const defaultProps = {
   ...LineLayer.defaultProps,
 
   image: {type: 'image', value: null, async: true},
-  bounds: {type: 'array', value: [-180, -90, 180, 90], compare: true},
-  _imageCoordinateSystem: COORDINATE_SYSTEM.LNGLAT,
-  textureParameters: DEFAULT_TEXTURE_PARAMETERS,
+  imageUnscale: {type: 'array', value: null},
 
   numParticles: {type: 'number', min: 1, max: 1000000, value: 5000},
   maxAge: {type: 'number', min: 1, max: 255, value: 100},
   speedFactor: {type: 'number', min: 0, max: 1, value: 1},
+
   color: {type: 'color', value: DEFAULT_COLOR},
   width: {type: 'number', value: 1},
   animate: true,
+
+  bounds: {type: 'array', value: [-180, -90, 180, 90], compare: true},
+  wrapLongitude: true,
 };
 
 export default class ParticleLayer extends LineLayer {
@@ -200,7 +195,7 @@ export default class ParticleLayer extends LineLayer {
     }
 
     const {viewport, timeline} = this.context;
-    const {image, bounds, numParticles, speedFactor, maxAge} = this.props;
+    const {image, imageUnscale, bounds, numParticles, speedFactor, maxAge} = this.props;
     const {numAgedInstances, transform, previousTime} = this.state;
     const time = timeline.getTime();
     if (!image || time === previousTime) {
@@ -208,7 +203,7 @@ export default class ParticleLayer extends LineLayer {
     }
 
     // viewport
-    const viewportGlobe = viewport.resolution ? 1 : 0;
+    const viewportGlobe = !!viewport.resolution;
     const viewportGlobeCenter = [viewport.longitude, viewport.latitude];
     const viewportGlobeRadius = Math.max(
       distance(viewportGlobeCenter, viewport.unproject([0, 0])),
@@ -222,21 +217,21 @@ export default class ParticleLayer extends LineLayer {
     viewportBounds[3] = Math.min(viewportBounds[3], 85.051129);
 
     // speed factor for current zoom level
-    const devicePixelRatio = gl.luma.canvasSizeInfo.devicePixelRatio;
-    const viewportSpeedFactor = speedFactor * devicePixelRatio / 2 ** viewport.zoom;
+    const currentSpeedFactor = speedFactor / 2 ** (viewport.zoom + 7);
 
     // update particles age0
     const uniforms = {
-      speedTexture: image,
+      viewportGlobe,
+      viewportGlobeCenter: viewportGlobeCenter || [0, 0],
+      viewportGlobeRadius: viewportGlobeRadius || 0,
+      viewportBounds: viewportBounds || [0, 0, 0, 0],
+
+      bitmapTexture: image,
+      imageUnscale: imageUnscale || [0, 0],
       bounds,
       numParticles,
       maxAge,
-
-      viewportGlobe,
-      viewportGlobeCenter,
-      viewportGlobeRadius,
-      viewportBounds,
-      viewportSpeedFactor,
+      speedFactor: currentSpeedFactor,
 
       time,
       seed: Math.random(),

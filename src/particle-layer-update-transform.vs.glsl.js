@@ -14,28 +14,26 @@ precision highp float;
 in vec3 sourcePosition;
 out vec3 targetPosition;
 
-uniform sampler2D speedTexture;
+uniform bool viewportGlobe;
+uniform vec2 viewportGlobeCenter;
+uniform float viewportGlobeRadius;
+uniform vec4 viewportBounds;
+
+uniform sampler2D bitmapTexture;
+uniform vec2 imageUnscale;
 uniform vec4 bounds;
 
 uniform float numParticles;
 uniform float maxAge;
-
-uniform float viewportGlobe;
-uniform vec2 viewportGlobeCenter;
-uniform float viewportGlobeRadius;
-uniform vec4 viewportBounds;
-uniform float viewportSpeedFactor;
+uniform float speedFactor;
 
 uniform float time;
 uniform float seed;
 
 const vec2 DROP_POSITION = vec2(0);
 
-vec2 getUV(vec2 pos) {
-  return vec2(
-    (pos.x - bounds[0]) / (bounds[2] - bounds[0]),
-    (pos.y - bounds[3]) / (bounds[1] - bounds[3])
-  );
+bool isNaN(float value) {
+  return !(value <= 0. || 0. <= value);
 }
 
 // see https://stackoverflow.com/a/27228836/1823988
@@ -79,39 +77,78 @@ vec2 destinationPoint(vec2 from, float dist, float bearing) {
   return vec2(lon, lat);
 }
 
-float rand(vec2 co) {
-  return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
+// longitude wrapping allows rendering in a repeated MapView
+float wrapLongitude(float lng) {
+  float wrappedLng = mod(lng + 180., 360.) - 180.;
+  return wrappedLng;
 }
 
-vec2 randVec2(vec2 seed) {
-  return vec2(rand(seed + 1.3), rand(seed + 2.1));
+float wrapLongitude(float lng, float minLng) {
+  float wrappedLng = wrapLongitude(lng);
+  if (wrappedLng < minLng) {
+    wrappedLng += 360.;
+  }
+  return wrappedLng;
 }
 
-vec2 randPosition(vec2 seed) {
-  vec2 randomVec2 = randVec2(seed);
-  
-  if (viewportGlobe > 0.5) {
-    randomVec2.x += 0.0001; // prevent generating point in the center
-    float dist = sqrt(randomVec2.x) * viewportGlobeRadius;
-    float bearing = randomVec2.y * 360.;
+float randFloat(vec2 seed) {
+  return fract(sin(dot(seed.xy, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+vec2 randPoint(vec2 seed) {
+  return vec2(randFloat(seed + 1.3), randFloat(seed + 2.1));
+}
+
+vec2 pointToPosition(vec2 point) {
+  if (viewportGlobe) {
+    point.x += 0.0001; // prevent generating point in the center
+    float dist = sqrt(point.x) * viewportGlobeRadius;
+    float bearing = point.y * 360.;
     return destinationPoint(viewportGlobeCenter, dist, bearing);
   } else {
     vec2 viewportBoundsMin = viewportBounds.xy;
     vec2 viewportBoundsMax = viewportBounds.zw;
-    return mix(viewportBoundsMin, viewportBoundsMax, randomVec2);
+    return mix(viewportBoundsMin, viewportBoundsMax, point);
   }
 }
 
 bool isPositionVisible(vec2 position) {
-  if (viewportGlobe > 0.5) {
+  if (viewportGlobe) {
     return distanceTo(viewportGlobeCenter, position) <= viewportGlobeRadius;
   } else {
     vec2 viewportBoundsMin = viewportBounds.xy;
     vec2 viewportBoundsMax = viewportBounds.zw;
+    float lng = wrapLongitude(position.x, viewportBoundsMin.x);
+    float lat = position.y;
     return (
-      viewportBoundsMin.x <= position.x && position.x <= viewportBoundsMax.x &&
-      viewportBoundsMin.y <= position.y && position.y <= viewportBoundsMax.y
+      viewportBoundsMin.x <= lng && lng <= viewportBoundsMax.x &&
+      viewportBoundsMin.y <= lat && lat <= viewportBoundsMax.y
     );
+  }
+}
+
+// bitmapTexture is in COORDINATE_SYSTEM.LNGLAT
+// no coordinate conversion needed
+vec2 getUV(vec2 pos) {
+  return vec2(
+    (pos.x - bounds[0]) / (bounds[2] - bounds[0]),
+    (pos.y - bounds[3]) / (bounds[1] - bounds[3])
+  );
+}
+
+bool raster_has_values(vec4 values) {
+  if (imageUnscale[0] < imageUnscale[1]) {
+    return values.a == 1.;
+  } else {
+    return !isNaN(values.x);
+  }
+}
+
+vec2 raster_get_values(vec4 color) {
+  if (imageUnscale[0] < imageUnscale[1]) {
+    return mix(vec2(imageUnscale[0]), vec2(imageUnscale[1]), color.xy);
+  } else {
+    return color.xy;
   }
 }
 
@@ -119,44 +156,51 @@ void main() {
   float particleIndex = mod(float(gl_VertexID), numParticles);
   float particleAge = floor(float(gl_VertexID) / numParticles);
 
-  if (sourcePosition.xy != DROP_POSITION) {
-    // update position
-    vec2 uv = getUV(sourcePosition.xy);
-    vec4 values = texture2D(speedTexture, uv);
-    vec2 speed = values.xy * 2. - 1.;
-    // float dist = sqrt(speed.x * speed.x + speed.y + speed.y) * viewportSpeedFactor * 10000.;
-    // float bearing = degrees(-atan2(speed.y, speed.x));
-    // targetPosition.xy = destinationPoint(sourcePosition.xy, dist, bearing);
-    float distortion = cos(radians(sourcePosition.y)); 
-    vec2 distortedSpeed = vec2(speed.x / distortion, speed.y);
-    vec2 offset = distortedSpeed * viewportSpeedFactor;
-    targetPosition.xy = sourcePosition.xy + offset;
-
-    if (values.a != 1.) {
-      // drop nodata
-      targetPosition.xy = DROP_POSITION;
-    }
-
-    // drop out of bounds
-    if (!isPositionVisible(sourcePosition.xy) || !isPositionVisible(targetPosition.xy)) {
-      targetPosition.xy = DROP_POSITION;
-    }
-
-    if (particleAge < 1.) {
-      if (abs(mod(particleIndex, maxAge + 2.) - mod(time, maxAge + 2.)) < 1.) {
-        // drop by maxAge, +2 because only non-randomized pairs are rendered
-        targetPosition.xy = DROP_POSITION;
-      }
-    }
-  } else {
-    if (particleAge < 1.) {
-      // generate random position to prevent converging particles
-      vec2 randomSeed = vec2(particleIndex * seed / numParticles);
-      vec2 randomPosition = randPosition(randomSeed);
-      targetPosition.xy = randomPosition;
-    } else {
-      targetPosition.xy = DROP_POSITION;
-    }
+  // update particles age0
+  // older particles age1-age(N-1) are copied with buffer.copyData
+  if (particleAge > 0.) {
+    return;
   }
+
+  if (sourcePosition.xy == DROP_POSITION) {
+    // generate random position to prevent converging particles
+    vec2 particleSeed = vec2(particleIndex * seed / numParticles);
+    vec2 point = randPoint(particleSeed);
+    vec2 position = pointToPosition(point);
+    targetPosition.xy = position;
+    targetPosition.x = wrapLongitude(targetPosition.x);
+    return;
+  }
+
+  if (!isPositionVisible(sourcePosition.xy)) {
+    // drop out of bounds
+    targetPosition.xy = DROP_POSITION;
+    return;
+  }
+
+  if (abs(mod(particleIndex, maxAge + 2.) - mod(time, maxAge + 2.)) < 1.) {
+    // drop by maxAge, +2 because only non-randomized pairs are rendered
+    targetPosition.xy = DROP_POSITION;
+    return;
+  }
+
+  vec2 uv = getUV(sourcePosition.xy);
+  vec4 bitmapColor = texture2D(bitmapTexture, uv);
+
+  if (!raster_has_values(bitmapColor)) {
+    // drop nodata
+    targetPosition.xy = DROP_POSITION;
+    return;
+  }
+
+  // update position
+  vec2 speed = raster_get_values(bitmapColor) * speedFactor;
+  // float dist = sqrt(speed.x * speed.x + speed.y + speed.y) * 10000.;
+  // float bearing = degrees(-atan2(speed.y, speed.x));
+  // targetPosition.xy = destinationPoint(sourcePosition.xy, dist, bearing);
+  float distortion = cos(radians(sourcePosition.y)); 
+  vec2 offset = vec2(speed.x / distortion, speed.y);
+  targetPosition.xy = sourcePosition.xy + offset;
+  targetPosition.x = wrapLongitude(targetPosition.x);
 }
 `;

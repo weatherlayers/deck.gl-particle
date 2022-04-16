@@ -21,6 +21,7 @@ const deckgl = new Deck({
     new ParticleLayer({
       id: 'particle',
       image: ..., // see deck.gl BitmapLayer image property
+      imageUnscale: ..., // [number, number]
       numParticles: ..., // number
       maxAge: ..., // number
       speedFactor: ..., // number
@@ -36,11 +37,18 @@ Requires WebGL 2 (Chrome, Firefox, Edge, Safari 15).
 
 ## Data
 
-Image contains particle speeds in [deck.gl COORDINATE_SYSTEM.LNGLAT](https://deck.gl/docs/developer-guide/coordinate-systems#supported-coordinate-systems), u component encoded into R channel, v component encoded into G channel. See [sample image](docs/wind_data.png). The image can be generated with the following commands, with u.grib and v.grib files as input:
+Image contains particle speeds in [deck.gl COORDINATE_SYSTEM.LNGLAT](https://deck.gl/docs/developer-guide/coordinate-systems#supported-coordinate-systems), u component encoded into R channel, v component encoded into G channel. See [sample image](docs/wind_data.png). The image texture can be generated with the following commands, with u.grib and v.grib files as input:
 
 ```
 gdalbuildvrt -separate wind_data.vrt u.grib v.grib
 gdal_translate -ot Byte -scale -128 127 0 255 wind_data.vrt wind_data.png
+```
+
+Pass the generated image texture and the original data bounds to ParticleLayer:
+
+```
+  image: 'wind_data.png',
+  imageUnscale: [-128, 127],
 ```
 
 ## Inspired by
