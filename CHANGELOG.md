@@ -4,6 +4,7 @@
 - animate internally so that deck.gl _animate is not necessary anymore
 - add imageUnscale param to allow arbitrary scaled data
 - increase particle drop when zooming out
+- drop particles out of bounds
 
 ## 1.0.9
 

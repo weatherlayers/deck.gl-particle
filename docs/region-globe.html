@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>deck-gl.particle</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+  <script src="https://unpkg.com/stats.js@0.17.0/build/stats.min.js"></script>
+  <script src="https://unpkg.com/deck.gl@8.7.0/dist.min.js"></script>
+  <script src="https://unpkg.com/deck.gl-particle@1.0.9/dist/deck.gl-particle.min.js"></script>
+  <!-- <script src="../dist/deck.gl-particle.min.js"></script> -->
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./attribution.css">
+  <link rel="stylesheet" href="./info-control.css">
+  <link rel="stylesheet" href="./fps-meter.css">
+</head>
+
+<body>
+  <div id="deck"></div>
+  <div id="top-left"></div>
+  <div id="bottom-right"></div>
+
+  <script type="module">
+    import { initConfig } from './config.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const config = initConfig();
+
+      const image = 'region.png';
+      const imageUnscale = [-128, 127];
+      const bounds = [-125.09000000000003, 48.2327999999999975, -119.7467999999999932, 50.4861000000000004];
+
+      // deck.gl
+      const deckgl = window.deckgl = new deck.Deck({
+        parent: document.getElementById('deck'),
+        initialViewState: {
+          longitude: -122.41840000000002,
+          latitude: 49.359449999999995,
+          altitude: 0.75,
+          zoom: 5,
+        },
+        controller: {
+          normalize: false,
+        },
+        views: [
+          new deck._GlobeView(),
+        ],
+        layers: [
+            new deck.SolidPolygonLayer({
+              id: 'background',
+              data: [[[-180, 90], [0, 90], [180, 90], [180, -90], [0, -90], [-180, -90]]],
+              getPolygon: d => d,
+              stroked: false,
+              filled: true,
+              getFillColor: [26, 26, 26],
+            }),
+            new deck.TileLayer({
+              id: 'basemap',
+              data: 'https://tile.jawg.io/jawg-dark/{z}/{x}/{y}.png?lang=en&access-token=L65oyoBsBEB9LmzFMCJLhM1Mk8stGaEF5Lhq0pKQEdJWyqDQ2o8CCHfkePgO2brE',
+              minZoom: 0,
+              maxZoom: 22,
+              tileSize: 256,
+              renderSubLayers: props => {
+                const {bbox: {west, south, east, north}} = props.tile;
+                return new deck.BitmapLayer(props, {
+                  data: null,
+                  image: props.data,
+                  bounds: [west, south, east, north],
+                  _imageCoordinateSystem: deck.COORDINATE_SYSTEM.CARTESIAN,
+                });
+              },
+              parameters: {
+                cull: true,
+                depthTest: false,
+              },
+            }),
+          new DeckGlParticle.ParticleLayer({
+            id: 'particle',
+            // data properties
+            image,
+            imageUnscale,
+            bounds,
+            // style properties
+            numParticles: config.particle.numParticles,
+            maxAge: config.particle.maxAge,
+            speedFactor: config.particle.speedFactor,
+            width: config.particle.width,
+            color: config.particle.color,
+            opacity: config.particle.opacity,
+            animate: config.particle.animate,
+            getPolygonOffset: () => [0, -1000],
+          }),
+        ],
+      });
+    });
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>deck-gl.particle</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+  <script src="https://unpkg.com/stats.js@0.17.0/build/stats.min.js"></script>
+  <script src="https://unpkg.com/deck.gl@8.7.0/dist.min.js"></script>
+  <script src="https://unpkg.com/deck.gl-particle@1.0.9/dist/deck.gl-particle.min.js"></script>
+  <!-- <script src="../dist/deck.gl-particle.min.js"></script> -->
+  <link rel="stylesheet" href="./style.css">
+  <link rel="stylesheet" href="./attribution.css">
+  <link rel="stylesheet" href="./info-control.css">
+  <link rel="stylesheet" href="./fps-meter.css">
+</head>
+
+<body>
+  <div id="deck"></div>
+  <div id="top-left"></div>
+  <div id="bottom-right"></div>
+
+  <script type="module">
+    import { initConfig } from './config.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const config = initConfig();
+
+      const image = 'region.png';
+      const imageUnscale = [-128, 127];
+      const bounds = [-125.09000000000003, 48.2327999999999975, -119.7467999999999932, 50.4861000000000004];
+
+      // deck.gl
+      const deckgl = window.deckgl = new deck.Deck({
+        parent: document.getElementById('deck'),
+        initialViewState: {
+          longitude: -122.41840000000002,
+          latitude: 49.359449999999995,
+          zoom: 6,
+        },
+        controller: {
+          normalize: false,
+        },
+        views: [
+          new deck.MapView({ repeat: true }),
+        ],
+        layers: [
+          new deck.TileLayer({
+            id: 'basemap',
+            data: 'https://cartodb-basemaps-a.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png',
+            minZoom: 0,
+            maxZoom: 19,
+            tileSize: 256,
+            renderSubLayers: props => {
+              const {bbox: {west, south, east, north}} = props.tile;
+              return new deck.BitmapLayer(props, {
+                data: null,
+                image: props.data,
+                bounds: [west, south, east, north]
+              });
+            },
+          }),
+          new DeckGlParticle.ParticleLayer({
+            id: 'particle',
+            // data properties
+            image,
+            imageUnscale,
+            bounds,
+            // style properties
+            numParticles: config.particle.numParticles,
+            maxAge: config.particle.maxAge,
+            speedFactor: config.particle.speedFactor,
+            width: config.particle.width,
+            color: config.particle.color,
+            opacity: config.particle.opacity,
+            animate: config.particle.animate,
+            getPolygonOffset: () => [0, -1000],
+          }),
+        ],
+      });
+    });
+  </script>
+</body>
+
+</html>

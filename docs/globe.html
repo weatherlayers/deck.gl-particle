@@ -30,9 +30,12 @@
     window.addEventListener('DOMContentLoaded', () => {
       const config = initConfig();
 
-      // animated deck.gl
-      let lastRenderTime = 0;
-      const deckgl = new deck.Deck({
+      const image = 'wind_data.png';
+      const imageUnscale = [-128, 127];
+      const bounds = [-180, -90, 180, 90];
+
+      // deck.gl
+      const deckgl = window.deckgl = new deck.Deck({
         parent: document.getElementById('deck'),
         initialViewState: {
           longitude: -100,
@@ -104,8 +107,11 @@
             }),
             new DeckGlParticle.ParticleLayer({
               id: 'particle',
-              image: 'wind_data.png',
-              imageUnscale: [-128, 127],
+              // data properties
+              image,
+              imageUnscale,
+              bounds,
+              // style properties
               numParticles: config.particle.numParticles,
               maxAge: config.particle.maxAge,
               speedFactor: config.particle.speedFactor,
