@@ -34,7 +34,9 @@ const deckgl = new Deck({
 });
 ```
 
-Requires WebGL 2 (Chrome, Firefox, Edge, Safari 15). 
+Requires WebGL 2 (Chrome, Firefox, Edge, Safari 15).
+
+This means that the layer doesn't work in a WebGL 1 interleaved context (such as Mapbox). Use overlaid context instead. See [deck.gl base maps](https://deck.gl/docs/get-started/using-with-map).
 
 ## Data
 
