@@ -1,5 +1,7 @@
 # Changelog
 
+## 1.1.0
+
 - support rendering in a repeated MapView
 - animate internally so that deck.gl _animate is not necessary anymore
 - add imageUnscale param to allow arbitrary scaled data
