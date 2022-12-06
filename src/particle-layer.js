@@ -7,7 +7,7 @@
  */
 import {LineLayer} from '@deck.gl/layers';
 import {isWebGL2, Buffer, Transform} from '@luma.gl/core';
-import {isViewportGlobe, getViewportGlobeCenter, getViewportGlobeRadius, getViewportBounds} from './utils/viewport';
+import {isViewportGlobe, getViewportGlobeCenter, getViewportGlobeRadius, getViewportBounds} from './utils/viewport.js';
 import updateTransformVs from './particle-layer-update-transform.vs.glsl';
 
 const FPS = 30;

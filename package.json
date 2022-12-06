@@ -12,6 +12,7 @@
   "repository": "github:weatherlayers/deck.gl-particle",
   "main": "src/index.js",
   "browser": "dist/deck.gl-particle.min.js",
+  "type": "module",
   "scripts": {
     "build": "rimraf dist && rollup -c",
     "dev": "rollup -c -w",
