@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022 WeatherLayers.com
+ * Copyright (c) 2021-2023 WeatherLayers.com
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
