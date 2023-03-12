@@ -12,4 +12,4 @@ export const DEFAULT_RADIUS = 6370972;
 
 export function distance(start, destination) {
   return geodesyDistance(start, destination, DEFAULT_RADIUS);
-};
+}
