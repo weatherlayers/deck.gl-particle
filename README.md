@@ -6,6 +6,8 @@
 
 Particle simulation layer for deck.gl
 
+**⚠️ The repository is archived as read-only. Use [weatherlayers-gl](https://github.com/weatherlayers/weatherlayers-gl) instead.**
+
 [Demo](https://weatherlayers.github.io/deck.gl-particle/)
 
 <img src="docs/screenshot@2x.png" alt="Screenshot" width="640" height="320">
